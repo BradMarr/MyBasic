@@ -15,3 +15,4 @@ rm ex/ex.o
 
 echo "----RUNNING CODE----" 
 ex/ex "$@"
+rm ex/ex
