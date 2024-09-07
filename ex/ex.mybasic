@@ -1,2 +1,5 @@
-print "Hello World!" 0x0A
+var test 8 "bob"
+print "Hello "
+print test
+print "!" '10'
 exit 0

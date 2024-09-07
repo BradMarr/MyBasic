@@ -3,16 +3,16 @@
 echo "----COMPILING COMPILER----" 
 g++ -std=c++20 compiler/main.cpp -o target/main
 
-echo "----RUNNING COMPILER----" 
+echo "-----RUNNING COMPILER-----" 
 target/main "$@"
 
-echo "----ASSEMBLING CODE----" 
+echo "-----ASSEMBLING CODE------" 
 nasm -f elf64 ex/ex.asm
 
-echo "----LINKING CODE----" 
+echo "-------LINKING CODE-------" 
 ld ex/ex.o -o ex/ex
 rm ex/ex.o
 
-echo "----RUNNING CODE----" 
+echo "-------RUNNING CODE-------" 
 ex/ex "$@"
 rm ex/ex

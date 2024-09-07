@@ -4,10 +4,24 @@ _start:
 mov rax, 1 
 mov rdi, 1 
 lea rsi, [rel lit_1] 
-mov rdx, 13 
+mov rdx, 6 
+syscall 
+mov rax, 1 
+mov rdi, 1 
+mov rsi, var_test 
+mov rdx, len_var_test 
+syscall 
+mov rax, 1 
+mov rdi, 1 
+lea rsi, [rel lit_2] 
+mov rdx, 2 
 syscall 
 mov rax, 60 
 mov rdi, 0 
 syscall 
 section .data 
-lit_1 db "Hello World!", 0x0A
+var_test db "bob"
+len_var_test equ $-var_test
+lit_1 db "Hello "
+lit_2 db "!", 10
+section .bss 

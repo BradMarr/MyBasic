@@ -5,6 +5,7 @@
 #include "frontend.h"
 #include "token.h"
 #include "build.h"
+#include "opt.h"
 
 void help() {
     panic("You did something wrong.");
@@ -12,9 +13,7 @@ void help() {
 
 int main(int argc, char *argv[]) {
     if (argc > 1) {
-        std::string arg = argv[1];
-
-        if (arg == "build") {
+        if (std::string(argv[1]) == "build") {
             if (argc == 3) {
                 std::string input_path = argv[2];
                 std::size_t pos = input_path.rfind('.');
@@ -27,7 +26,10 @@ int main(int argc, char *argv[]) {
             } else {
                 help();
             }
+        } else if (std::string(argv[1]) == "opt") {
+            opt_passthrough(argv[2]);
         } else {
+            std::cout << argv[1];
             help();
         }
     } else {
