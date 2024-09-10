@@ -32,6 +32,4 @@ void lines_to_file(const std::string& output_path, const std::vector<std::string
 void opt_passthrough(std::string input_path) {
     std::size_t pos = input_path.rfind('.');
     input_path = input_path.substr(0, pos) + ".asm";
-    
-    
 }
