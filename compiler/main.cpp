@@ -29,7 +29,6 @@ int main(int argc, char *argv[]) {
         } else if (std::string(argv[1]) == "opt") {
             opt_passthrough(argv[2]);
         } else {
-            std::cout << argv[1];
             help();
         }
     } else {

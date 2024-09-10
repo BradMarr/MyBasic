@@ -6,7 +6,7 @@
 
 int string_literal_count = 0;
 
-void asm_exit(std::ofstream& output_file, std::string return_value, std::vector<std::string> data_section, std::vector<std::string> bss_section) {
+void asm_exit(std::ofstream& output_file, std::string return_value, std::vector<std::string> data_section, std::vector<std::string> bss_section, std::vector<std::string> rodata_section) {
     output_file <<
         "mov rax, 60 \n" <<
         "mov rdi, " + return_value + " \n" <<
@@ -18,6 +18,10 @@ void asm_exit(std::ofstream& output_file, std::string return_value, std::vector<
     output_file << "section .bss \n";
     for (std::string bss_item : bss_section) {
         output_file << bss_item << std::endl;
+    }
+    output_file << "section .rodata \n";
+    for (std::string rodata_item : rodata_section) {
+        output_file << rodata_item << std::endl;
     }
 }
 
@@ -66,7 +70,7 @@ void asm_print_lit(std::ofstream& output_file, int lit_index, int lit_length) {
         "syscall \n";
 }
 
-void asm_print(std::ofstream& output_file, std::vector<Token> print_items, std::vector<std::string>& data_section, int line_number) {
+void asm_print(std::ofstream& output_file, std::vector<Token> print_items, std::vector<std::string>& rodata_section, int line_number) {
     int data_size = 0;
     string_literal_count += 1;
     std::string constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
@@ -82,10 +86,11 @@ void asm_print(std::ofstream& output_file, std::vector<Token> print_items, std::
             data_size += 1;
         } else if (item.type == "var") {
             if (constructed_data != "lit_" + std::to_string(string_literal_count) + " db ") {
-                data_section.push_back(constructed_data);
+                rodata_section.push_back(constructed_data);
 
                 asm_print_lit(output_file, string_literal_count, data_size);
                 string_literal_count += 1;
+                data_size = 0;
                 constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
             }
 
@@ -96,10 +101,11 @@ void asm_print(std::ofstream& output_file, std::vector<Token> print_items, std::
     }
 
     if (constructed_data != "lit_" + std::to_string(string_literal_count) + " db ") {
-        data_section.push_back(constructed_data);
+        rodata_section.push_back(constructed_data);
 
         asm_print_lit(output_file, string_literal_count, data_size);
         string_literal_count += 1;
+        data_size = 0;
         constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
     }
 }

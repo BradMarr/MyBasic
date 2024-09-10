@@ -4,11 +4,11 @@
 #include <string>
 
 class Token : public std::string {
-public:
-    std::string type;
-    std::string allocsize;
+    public:
+        std::string type;
+        std::string allocsize;
     
-        Token(const std::string& s, const std::string& t) 
+        Token(const std::string& s, const std::string& t)
             : std::string(s), type(t) {}
 };
 

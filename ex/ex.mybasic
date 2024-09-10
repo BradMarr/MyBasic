@@ -1,3 +1,5 @@
-var test 8 "bob"
-print "Hello " test "!" '10'
+import LF char
+
+var test 8 "Bob"
+print "Hello " test "!" LF
 exit 0

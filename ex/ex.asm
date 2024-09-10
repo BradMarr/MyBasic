@@ -14,14 +14,22 @@ syscall
 mov rax, 1 
 mov rdi, 1 
 mov rsi, lit_2 
-mov rdx, 8 
+mov rdx, 1 
+syscall 
+mov rax, 1 
+mov rdi, 1 
+mov rsi, var_LF 
+mov rdx, len_var_LF 
 syscall 
 mov rax, 60 
 mov rdi, 0 
 syscall 
 section .data 
-var_test db "bob"
+var_test db "Bob"
 len_var_test equ $-var_test
-lit_1 db "Hello ", 
-lit_2 db "!", 10, 
 section .bss 
+section .rodata 
+var_LF db 10
+len_var_LF equ 1
+lit_1 db "Hello ", 
+lit_2 db "!", 
