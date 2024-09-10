@@ -64,7 +64,9 @@
         "xmemory": "cpp",
         "xtr1common": "cpp",
         "xutility": "cpp",
-        "print": "cpp"
+        "print": "cpp",
+        "ranges": "cpp",
+        "span": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

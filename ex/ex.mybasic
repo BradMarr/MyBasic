@@ -1,5 +1,3 @@
 var test 8 "bob"
-print "Hello "
-print test
-print "!" '10'
+print "Hello " test "!" '10'
 exit 0

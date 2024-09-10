@@ -4,6 +4,8 @@
 #include <vector>
 #include "token.h"
 
+int string_literal_count = 0;
+
 void asm_exit(std::ofstream& output_file, std::string return_value, std::vector<std::string> data_section, std::vector<std::string> bss_section) {
     output_file <<
         "mov rax, 60 \n" <<
@@ -53,4 +55,51 @@ void asm_print_var(std::ofstream& output_file, std::string var_name) {
         "mov rsi, var_" + var_name + " \n"
         "mov rdx, len_var_" + var_name + " \n"
         "syscall \n";
+}
+
+void asm_print_lit(std::ofstream& output_file, int lit_index, int lit_length) {
+    output_file << 
+        "mov rax, 1 \n"
+        "mov rdi, 1 \n"
+        "mov rsi, lit_" + std::to_string(lit_index) + " \n"
+        "mov rdx, " + std::to_string(lit_length) + " \n"
+        "syscall \n";
+}
+
+void asm_print(std::ofstream& output_file, std::vector<Token> print_items, std::vector<std::string>& data_section, int line_number) {
+    int data_size = 0;
+    string_literal_count += 1;
+    std::string constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
+
+    for (int i = 0; i < size(print_items); i++) {
+        Token item = print_items[i];
+
+        if (item.type == "string") {
+            constructed_data += "\"" + item + "\", ";
+            data_size += item.size();
+        } else if (item.type == "char") {
+            constructed_data += item + ", ";
+            data_size += 1;
+        } else if (item.type == "var") {
+            if (constructed_data != "lit_" + std::to_string(string_literal_count) + " db ") {
+                data_section.push_back(constructed_data);
+
+                asm_print_lit(output_file, string_literal_count, data_size);
+                string_literal_count += 1;
+                constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
+            }
+
+            asm_print_var(output_file, item);
+        } else {
+            panic("Incorrect data type (line " + std::to_string(line_number) + "): `" + item.type + "` can not be fed into print.");
+        }
+    }
+
+    if (constructed_data != "lit_" + std::to_string(string_literal_count) + " db ") {
+        data_section.push_back(constructed_data);
+
+        asm_print_lit(output_file, string_literal_count, data_size);
+        string_literal_count += 1;
+        constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
+    }
 }
