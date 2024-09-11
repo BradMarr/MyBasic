@@ -112,7 +112,7 @@ Libs LIBS = {
             push_char(rodata_section, "US", 31);
         }},
         {"QUO", [](std::vector<std::string>& rodata_section) { 
-            push_char(rodata_section, "US", 34);
+            push_char(rodata_section, "QUO", 34);
         }},
         {"DEL", [](std::vector<std::string>& rodata_section) { 
             push_char(rodata_section, "DEL", 127);

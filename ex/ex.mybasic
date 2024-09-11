@@ -1,4 +1,4 @@
-import LF char
+import LF chars
 
 var test 8 "Bob"
 print "Hello " test "!" LF

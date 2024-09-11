@@ -42,7 +42,13 @@ void build(std::string input_path, std::string output_path) {
             output_file << std::endl;
 
         } else if (tokens[0] == "import") {
-            LIBS["chars"]["LF"](rodata_section);
+            try {
+                LIBS[tokens[2]][tokens[1]](rodata_section);
+            } catch (const std::bad_function_call& e) {
+                panic("Invalid import (line " + std::to_string(line_number) + "): `" + tokens[1] + "` in `" + tokens[2] + "` doesn't exist.");
+            } catch (const std::exception& e) {
+                panic(e.what());
+            }
         } else if (tokens[0] == "var") {
             asm_var(output_file, tokens[1], tokens[2], tokens[3], data_section, line_number);
         } else if (tokens[0] == "print") {
