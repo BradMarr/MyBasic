@@ -2,15 +2,17 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 class Token : public std::string {
     public:
         std::string type;
-        std::string allocsize;
     
         Token(const std::string& s, const std::string& t)
             : std::string(s), type(t) {}
 };
+
+std::unordered_map<std::string, std::string> var_sizes;
 
 std::vector<Token> split(const std::string& s, char delimiter) {
     std::vector<Token> tokens;

@@ -6,6 +6,25 @@
 #include "asm.h"
 #include "libs.h"
 
+std::string bits_to_operand_size(std::string bits, int line_number) {
+    if (bits == "8") {
+        return "byte";
+    } else if (bits == "16") {
+        return "word";
+    } else if (bits == "32") {
+        return "dword";
+    } else if (bits == "64") {
+        return "qword";
+    } else if (bits == "80") {
+        return "tword";
+    } else if (bits == "128") {
+        return "dqword";
+    } else {
+        panic("Invalid operand size (line " + std::to_string(line_number) + "): `" + bits + "` is an invalid size.");
+        return "";
+    }
+}
+
 void build(std::string input_path, std::string output_path) {
 
     std::ifstream input_file(input_path);
@@ -15,8 +34,8 @@ void build(std::string input_path, std::string output_path) {
 
     std::ofstream output_file(output_path, std::ofstream::trunc);
     output_file << 
-        "section .text \n" <<
-        "global _start \n" <<
+        "section .text \n"
+        "global _start \n"
         "_start: \n";
 
     std::string line;
@@ -30,7 +49,6 @@ void build(std::string input_path, std::string output_path) {
         }
 
         std::vector tokens = split(line, ' ');
-
 
         if (tokens[0] == "exit") {
             asm_exit(output_file, tokens[1], data_section, bss_section, rodata_section);
@@ -49,8 +67,10 @@ void build(std::string input_path, std::string output_path) {
             } catch (const std::exception& e) {
                 panic(e.what());
             }
+
         } else if (tokens[0] == "var") {
             asm_var(output_file, tokens[1], tokens[2], tokens[3], data_section, line_number);
+
         } else if (tokens[0] == "print") {
             if (tokens[1].type == "var") {
                 asm_print_var(output_file, tokens[1]);
@@ -62,6 +82,27 @@ void build(std::string input_path, std::string output_path) {
 
         } else if (tokens[0] == "#") {
             ;
+
+        } else if (tokens[0] == "add") {
+            output_file <<
+                "mov rax, " + tokens[1] + "\n"
+                "add " + bits_to_operand_size(var_sizes[tokens[1]], line_number) + " [" + tokens[1] + "], " + tokens[2] + " \n";
+                
+        } else if (tokens[0] == "sub") {
+            output_file <<
+                "mov rax, " + tokens[1] + "\n"
+                "sub " + bits_to_operand_size(var_sizes[tokens[1]], line_number) + " [" + tokens[1] + "], " + tokens[2] + " \n";
+
+        } else if (tokens[0] == "inc") {
+            output_file <<
+                "mov rax, " + tokens[1] + "\n"
+                "inc " + bits_to_operand_size(var_sizes[tokens[1]], line_number) + " [" + tokens[1] + "] \n";
+
+        } else if (tokens[0] == "dec") {
+            output_file <<
+                "mov rax, " + tokens[1] + "\n"
+                "dec " + bits_to_operand_size(var_sizes[tokens[1]], line_number) + " [" + tokens[1] + "] \n";
+
         } else {
             panic("Invalid syntax (line " + std::to_string(line_number) + "): `" + tokens[0] + "` is not a recognised command.");
         }

@@ -25,8 +25,9 @@ void asm_exit(std::ofstream& output_file, std::string return_value, std::vector<
     }
 }
 
-void asm_var(std::ofstream& output_file, std::string var_name, std::string var_size, Token var_value, std::vector<std::string>& data_section, int line_number, std::string pre ="var_") {
+void asm_var(std::ofstream& output_file, std::string var_name, std::string var_size, Token& var_value, std::vector<std::string>& data_section, int line_number, std::string pre ="") {
     std::string directive;
+    var_sizes.insert({var_name, var_size});
     if (var_size == "8") {
         directive = "db";
     } else if (var_size == "16") {
@@ -49,15 +50,15 @@ void asm_var(std::ofstream& output_file, std::string var_name, std::string var_s
     }
 
     data_section.push_back(pre + var_name + " " + directive + " " + type_formatted_token);
-    data_section.push_back("len_var_" + var_name + " equ $-var_" + var_name);
+    data_section.push_back("len_" + var_name + " equ $-" + var_name);
 }
 
 void asm_print_var(std::ofstream& output_file, std::string var_name) {
     output_file << 
         "mov rax, 1 \n"
         "mov rdi, 1 \n"
-        "mov rsi, var_" + var_name + " \n"
-        "mov rdx, len_var_" + var_name + " \n"
+        "mov rsi, " + var_name + " \n"
+        "mov rdx, len_" + var_name + " \n"
         "syscall \n";
 }
 

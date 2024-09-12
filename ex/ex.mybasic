@@ -1,5 +1,9 @@
 import LF chars
 
-var test 8 "Bob"
-print "Hello " test "!" LF
+var testa 8 5
+
+add testa 2
+
+add testa 48
+print "Hello " testa "!" LF
 exit 0
