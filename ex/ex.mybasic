@@ -1,7 +1,11 @@
 import LF chars
+
 var test_3 8 3
 var is_4 8 4
+
 add test_3 is_4
 add test_3 48
+
 print "Hello " test_3 "!" LF
+
 exit 0
