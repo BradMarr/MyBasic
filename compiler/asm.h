@@ -8,20 +8,27 @@ int string_literal_count = 0;
 
 void asm_exit(std::ofstream& output_file, std::string return_value, std::vector<std::string> data_section, std::vector<std::string> bss_section, std::vector<std::string> rodata_section) {
     output_file <<
-        "mov rax, 60 \n" <<
-        "mov rdi, " + return_value + " \n" <<
-        "syscall \n" <<
-        "section .data \n";
-    for (std::string data_item : data_section) {
+        "mov rax, 60 \n"
+        "mov rdi, " + return_value + " \n"
+        "syscall \n";
+
+    if (size(data_section) != 0) {
+        output_file << "section .data \n";
+        for (std::string data_item : data_section) {
         output_file << data_item << std::endl;
+        }
     }
-    output_file << "section .bss \n";
-    for (std::string bss_item : bss_section) {
-        output_file << bss_item << std::endl;
+    if (size(bss_section) != 0) {
+        output_file << "section .bss \n";
+        for (std::string bss_item : bss_section) {
+            output_file << bss_item << std::endl;
+        }
     }
-    output_file << "section .rodata \n";
-    for (std::string rodata_item : rodata_section) {
-        output_file << rodata_item << std::endl;
+    if (size(rodata_section) != 0) {
+        output_file << "section .rodata \n";
+        for (std::string rodata_item : rodata_section) {
+            output_file << rodata_item << std::endl;
+        }
     }
 }
 

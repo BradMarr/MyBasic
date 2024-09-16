@@ -1,9 +1,7 @@
 import LF chars
-
-var testa 8 5
-
-add testa 2
-
-add testa 48
-print "Hello " testa "!" LF
+var test_3 8 3
+var is_4 8 4
+add test_3 is_4
+add test_3 48
+print "Hello " test_3 "!" LF
 exit 0

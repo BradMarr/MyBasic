@@ -5,6 +5,7 @@
 #include "frontend.h"
 #include "asm.h"
 #include "libs.h"
+#include <cctype>
 
 std::string bits_to_operand_size(std::string bits, int line_number) {
     if (bits == "8") {
@@ -84,9 +85,14 @@ void build(std::string input_path, std::string output_path) {
             ;
 
         } else if (tokens[0] == "add") {
-            output_file <<
-                "mov rax, " + tokens[1] + "\n"
-                "add " + bits_to_operand_size(var_sizes[tokens[1]], line_number) + " [" + tokens[1] + "], " + tokens[2] + " \n";
+            if (std::isdigit(tokens[2][0])) {
+                output_file <<
+                    "add " + bits_to_operand_size(var_sizes[tokens[1]], line_number) + " [" + tokens[1] + "], " + tokens[2] + " \n";
+            } else {
+                output_file <<
+                    "mov rax, [" + tokens[2] + "] \n"
+                    "add [" + tokens[1] + "], rax \n";
+            }
                 
         } else if (tokens[0] == "sub") {
             output_file <<
