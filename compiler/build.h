@@ -29,10 +29,7 @@ void build(std::string input_path, std::string output_path) {
             ASM.exit(tokens[1], data_section, bss_section, rodata_section);
         } else if (tokens[0] == "_") {
             tokens.erase(tokens.begin());
-            for (Token token : tokens) {
-                ASM << token << " ";
-            }
-            ASM << std::endl;
+            ASM._(tokens);
 
         } else if (tokens[0] == "import") {
             ASM.import(tokens[1], tokens[2], rodata_section);
@@ -46,7 +43,6 @@ void build(std::string input_path, std::string output_path) {
 
         } else if (tokens[0] == "#") {
             ;
-
         } else if (tokens[0] == "add") {
             ASM.add(tokens[1], tokens[2]);
                 

@@ -87,6 +87,13 @@ class ASM : public std::ofstream {
             }
         }
 
+        void _(std::vector<Token> line) {
+            for (Token item : line) {
+                *this << item << " ";
+            }
+            *this << std::endl;
+        }
+
         void var(std::string var_name, std::string var_size, Token& var_value, std::vector<std::string>& data_section, std::string pre ="") {
             std::string directive;
             var_sizes.insert({var_name, var_size});
