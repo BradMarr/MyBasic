@@ -1,5 +1,7 @@
 #!/bin/bash
 
+clear
+
 echo "----COMPILING COMPILER----" 
 g++ -std=c++23 compiler/main.cpp -o target/main
 
@@ -15,4 +17,4 @@ rm ex/ex.o
 
 echo "-------RUNNING CODE-------" 
 ex/ex "$@"
-# rm ex/ex
+rm ex/ex

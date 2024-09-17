@@ -4,43 +4,17 @@
 #include <vector>
 #include "frontend.h"
 #include "asm.h"
-#include "libs.h"
 #include <cctype>
 
-std::string bits_to_operand_size(std::string bits, int line_number) {
-    if (bits == "8") {
-        return "byte";
-    } else if (bits == "16") {
-        return "word";
-    } else if (bits == "32") {
-        return "dword";
-    } else if (bits == "64") {
-        return "qword";
-    } else if (bits == "80") {
-        return "tword";
-    } else if (bits == "128") {
-        return "dqword";
-    } else {
-        panic("Invalid operand size (line " + std::to_string(line_number) + "): `" + bits + "` is an invalid size.");
-        return "";
-    }
-}
-
 void build(std::string input_path, std::string output_path) {
+    ASM ASM(output_path, std::ofstream::trunc);
 
     std::ifstream input_file(input_path);
     if (!input_file) {
         panic("Error opening file: " + input_path);
     }
 
-    std::ofstream output_file(output_path, std::ofstream::trunc);
-    output_file << 
-        "section .text \n"
-        "global _start \n"
-        "_start: \n";
-
     std::string line;
-    int line_number = 1;
     std::vector<std::string> data_section = {};
     std::vector<std::string> bss_section = {};
     std::vector<std::string> rodata_section = {};
@@ -52,69 +26,42 @@ void build(std::string input_path, std::string output_path) {
         std::vector tokens = split(line, ' ');
 
         if (tokens[0] == "exit") {
-            asm_exit(output_file, tokens[1], data_section, bss_section, rodata_section);
+            ASM.exit(tokens[1], data_section, bss_section, rodata_section);
         } else if (tokens[0] == "_") {
             tokens.erase(tokens.begin());
             for (Token token : tokens) {
-                output_file << token << " ";
+                ASM << token << " ";
             }
-            output_file << std::endl;
+            ASM << std::endl;
 
         } else if (tokens[0] == "import") {
-            try {
-                LIBS[tokens[2]][tokens[1]](rodata_section);
-            } catch (const std::bad_function_call& e) {
-                panic("Invalid import (line " + std::to_string(line_number) + "): `" + tokens[1] + "` in `" + tokens[2] + "` doesn't exist.");
-            } catch (const std::exception& e) {
-                panic(e.what());
-            }
+            ASM.import(tokens[1], tokens[2], rodata_section);
 
         } else if (tokens[0] == "var") {
-            asm_var(output_file, tokens[1], tokens[2], tokens[3], data_section, line_number);
+            ASM.var(tokens[1], tokens[2], tokens[3], data_section);
 
         } else if (tokens[0] == "print") {
-            if (tokens[1].type == "var") {
-                asm_print_var(output_file, tokens[1]);
-                continue;
-            }
-
             tokens.erase(tokens.begin());
-            asm_print(output_file, tokens, rodata_section, line_number);
+            ASM.print(tokens, rodata_section);
 
         } else if (tokens[0] == "#") {
             ;
 
         } else if (tokens[0] == "add") {
-            if (std::isdigit(tokens[2][0])) {
-                output_file <<
-                    "add " + bits_to_operand_size(var_sizes[tokens[1]], line_number) + " [" + tokens[1] + "], " + tokens[2] + " \n";
-            } else {
-                output_file <<
-                    "mov rax, [" + tokens[2] + "] \n"
-                    "add [" + tokens[1] + "], rax \n";
-            }
+            ASM.add(tokens[1], tokens[2]);
                 
         } else if (tokens[0] == "sub") {
-            output_file <<
-                "mov rax, " + tokens[1] + "\n"
-                "sub " + bits_to_operand_size(var_sizes[tokens[1]], line_number) + " [" + tokens[1] + "], " + tokens[2] + " \n";
-
+            ASM.sub(tokens[1], tokens[2]);
         } else if (tokens[0] == "inc") {
-            output_file <<
-                "mov rax, " + tokens[1] + "\n"
-                "inc " + bits_to_operand_size(var_sizes[tokens[1]], line_number) + " [" + tokens[1] + "] \n";
-
+            ASM.inc(tokens[1]);
         } else if (tokens[0] == "dec") {
-            output_file <<
-                "mov rax, " + tokens[1] + "\n"
-                "dec " + bits_to_operand_size(var_sizes[tokens[1]], line_number) + " [" + tokens[1] + "] \n";
-
+            ASM.dec(tokens[1]);
         } else {
-            panic("Invalid syntax (line " + std::to_string(line_number) + "): `" + tokens[0] + "` is not a recognised command.");
+            panic("Invalid syntax (line " + std::to_string(ASM.line_number) + "): `" + tokens[0] + "` is not a recognised command.");
         }
-        line_number++;
+        ASM.line_number++;
     }
 
     input_file.close();
-    output_file.close();
+    ASM.close();
 }

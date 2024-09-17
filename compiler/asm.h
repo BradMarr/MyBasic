@@ -3,117 +3,194 @@
 #include <fstream>
 #include <vector>
 #include "token.h"
+#include "libs.h"
 
-int string_literal_count = 0;
+class ASM : public std::ofstream {
+    public:
+        int line_number = 1;
 
-void asm_exit(std::ofstream& output_file, std::string return_value, std::vector<std::string> data_section, std::vector<std::string> bss_section, std::vector<std::string> rodata_section) {
-    output_file <<
-        "mov rax, 60 \n"
-        "mov rdi, " + return_value + " \n"
-        "syscall \n";
+        ASM(const std::string& fileName, std::ios_base::openmode mode = std::ios::out)
+            : std::ofstream(fileName, mode) {
+                *this << 
+                    "section .text \n"
+                    "global _start \n"
+                    "_start: \n";
+            }
 
-    if (size(data_section) != 0) {
-        output_file << "section .data \n";
-        for (std::string data_item : data_section) {
-        output_file << data_item << std::endl;
+        void import(std::string item, std::string lib, std::vector<std::string>& rodata_section) {
+            try {
+                LIBS[lib][item](rodata_section);
+            } catch (const std::bad_function_call& e) {
+                panic("Invalid import (line " + std::to_string(line_number) + "): `" + item + "` in `" + lib + "` doesn't exist.");
+            } catch (const std::exception& e) {
+                panic(e.what());
+            }
         }
-    }
-    if (size(bss_section) != 0) {
-        output_file << "section .bss \n";
-        for (std::string bss_item : bss_section) {
-            output_file << bss_item << std::endl;
+
+        void add(std::string var, std::string value) {
+            if (std::isdigit(value[0])) {
+                *this <<
+                    "add " + bits_to_operand_size(var_sizes[var]) + " [" + var + "], " + value + " \n";
+            } else {
+                *this <<
+                    "mov rax, [" + value + "] \n"
+                    "add [" + var + "], rax \n";
+            }
         }
-    }
-    if (size(rodata_section) != 0) {
-        output_file << "section .rodata \n";
-        for (std::string rodata_item : rodata_section) {
-            output_file << rodata_item << std::endl;
+
+        void sub(std::string var, std::string value) {
+            if (std::isdigit(value[0])) {
+                *this <<
+                    "sub " + bits_to_operand_size(var_sizes[var]) + " [" + var + "], " + value + " \n";
+            } else {
+                *this <<
+                    "mov rax, [" + value + "] \n"
+                    "sub [" + var + "], rax \n";
+            }
         }
-    }
-}
 
-void asm_var(std::ofstream& output_file, std::string var_name, std::string var_size, Token& var_value, std::vector<std::string>& data_section, int line_number, std::string pre ="") {
-    std::string directive;
-    var_sizes.insert({var_name, var_size});
-    if (var_size == "8") {
-        directive = "db";
-    } else if (var_size == "16") {
-        directive = "dw";
-    } else if (var_size == "32") {
-        directive = "dd";
-    } else if (var_size == "64") {
-        directive = "dq";
-    } else if (var_size == "80") {
-        directive = "dt"; 
-    } else {
-        panic("Incorrect variable size (line " + std::to_string(line_number) + "): `" + var_size + "` is not a valid size. You can use either 8, 16, 32, 64, or 80 bits.");
-    }
+        void inc(std::string var) {
+            *this <<
+                "mov rax, " + var + "\n"
+                "inc " + bits_to_operand_size(var_sizes[var]) + " [" + var + "] \n";
+        }
 
-    std::string type_formatted_token;
-    if (var_value.type == "string") {
-        type_formatted_token = "\"" + var_value + "\"";
-    } else {
-        type_formatted_token = var_value;
-    }
+        void dec(std::string var) {
+            *this <<
+                "mov rax, " + var + "\n"
+                "dec " + bits_to_operand_size(var_sizes[var]) + " [" + var + "] \n";
+        }
 
-    data_section.push_back(pre + var_name + " " + directive + " " + type_formatted_token);
-    data_section.push_back("len_" + var_name + " equ $-" + var_name);
-}
+        void exit(std::string return_value, std::vector<std::string> data_section, std::vector<std::string> bss_section, std::vector<std::string> rodata_section) {
+            *this <<
+                "mov rax, 60 \n"
+                "mov rdi, " + return_value + " \n"
+                "syscall \n";
 
-void asm_print_var(std::ofstream& output_file, std::string var_name) {
-    output_file << 
-        "mov rax, 1 \n"
-        "mov rdi, 1 \n"
-        "mov rsi, " + var_name + " \n"
-        "mov rdx, len_" + var_name + " \n"
-        "syscall \n";
-}
+            if (size(data_section) != 0) {
+                *this << "section .data \n";
+                for (std::string data_item : data_section) {
+                *this << data_item << std::endl;
+                }
+            }
+            if (size(bss_section) != 0) {
+                *this << "section .bss \n";
+                for (std::string bss_item : bss_section) {
+                    *this << bss_item << std::endl;
+                }
+            }
+            if (size(rodata_section) != 0) {
+                *this << "section .rodata \n";
+                for (std::string rodata_item : rodata_section) {
+                    *this << rodata_item << std::endl;
+                }
+            }
+        }
 
-void asm_print_lit(std::ofstream& output_file, int lit_index, int lit_length) {
-    output_file << 
-        "mov rax, 1 \n"
-        "mov rdi, 1 \n"
-        "mov rsi, lit_" + std::to_string(lit_index) + " \n"
-        "mov rdx, " + std::to_string(lit_length) + " \n"
-        "syscall \n";
-}
+        void var(std::string var_name, std::string var_size, Token& var_value, std::vector<std::string>& data_section, std::string pre ="") {
+            std::string directive;
+            var_sizes.insert({var_name, var_size});
+            if (var_size == "8") {
+                directive = "db";
+            } else if (var_size == "16") {
+                directive = "dw";
+            } else if (var_size == "32") {
+                directive = "dd";
+            } else if (var_size == "64") {
+                directive = "dq";
+            } else if (var_size == "80") {
+                directive = "dt"; 
+            } else {
+                panic("Incorrect variable size (line " + std::to_string(line_number) + "): `" + var_size + "` is not a valid size. You can use either 8, 16, 32, 64, or 80 bits.");
+            }
 
-void asm_print(std::ofstream& output_file, std::vector<Token> print_items, std::vector<std::string>& rodata_section, int line_number) {
-    int data_size = 0;
-    string_literal_count += 1;
-    std::string constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
+            std::string type_formatted_token;
+            if (var_value.type == "string") {
+                type_formatted_token = "\"" + var_value + "\"";
+            } else {
+                type_formatted_token = var_value;
+            }
 
-    for (int i = 0; i < size(print_items); i++) {
-        Token item = print_items[i];
+            data_section.push_back(pre + var_name + " " + directive + " " + type_formatted_token);
+            data_section.push_back("len_" + var_name + " equ $-" + var_name);
+        }
 
-        if (item.type == "string") {
-            constructed_data += "\"" + item + "\", ";
-            data_size += item.size();
-        } else if (item.type == "char") {
-            constructed_data += item + ", ";
-            data_size += 1;
-        } else if (item.type == "var") {
+        void print_var(std::string var_name) {
+            *this << 
+                "mov rax, 1 \n"
+                "mov rdi, 1 \n"
+                "mov rsi, " + var_name + " \n"
+                "mov rdx, len_" + var_name + " \n"
+                "syscall \n";
+        }
+
+        void print_lit(int lit_index, int lit_length) {
+            *this << 
+                "mov rax, 1 \n"
+                "mov rdi, 1 \n"
+                "mov rsi, lit_" + std::to_string(lit_index) + " \n"
+                "mov rdx, " + std::to_string(lit_length) + " \n"
+                "syscall \n";
+        }
+
+        void print(std::vector<Token> print_items, std::vector<std::string>& rodata_section) {
+            int data_size = 0;
+            string_literal_count += 1;
+            std::string constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
+
+            for (int i = 0; i < size(print_items); i++) {
+                Token item = print_items[i];
+
+                if (item.type == "string") {
+                    constructed_data += "\"" + item + "\", ";
+                    data_size += item.size();
+                } else if (item.type == "char") {
+                    constructed_data += item + ", ";
+                    data_size += 1;
+                } else if (item.type == "var") {
+                    if (constructed_data != "lit_" + std::to_string(string_literal_count) + " db ") {
+                        rodata_section.push_back(constructed_data);
+
+                        print_lit(string_literal_count, data_size);
+                        string_literal_count += 1;
+                        data_size = 0;
+                        constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
+                    }
+
+                    print_var(item);
+                } else {
+                    panic("Incorrect data type (line " + std::to_string(line_number) + "): `" + item.type + "` can not be fed into print.");
+                }
+            }
+
             if (constructed_data != "lit_" + std::to_string(string_literal_count) + " db ") {
                 rodata_section.push_back(constructed_data);
 
-                asm_print_lit(output_file, string_literal_count, data_size);
+                print_lit(string_literal_count, data_size);
                 string_literal_count += 1;
                 data_size = 0;
                 constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
             }
-
-            asm_print_var(output_file, item);
-        } else {
-            panic("Incorrect data type (line " + std::to_string(line_number) + "): `" + item.type + "` can not be fed into print.");
         }
-    }
+    private:
+        int string_literal_count = 0;
 
-    if (constructed_data != "lit_" + std::to_string(string_literal_count) + " db ") {
-        rodata_section.push_back(constructed_data);
-
-        asm_print_lit(output_file, string_literal_count, data_size);
-        string_literal_count += 1;
-        data_size = 0;
-        constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
-    }
-}
+        std::string bits_to_operand_size(std::string bits) {
+            if (bits == "8") {
+                return "byte";
+            } else if (bits == "16") {
+                return "word";
+            } else if (bits == "32") {
+                return "dword";
+            } else if (bits == "64") {
+                return "qword";
+            } else if (bits == "80") {
+                return "tword";
+            } else if (bits == "128") {
+                return "dqword";
+            } else {
+                panic("Invalid operand size (line " + std::to_string(line_number) + "): `" + bits + "` is an invalid size.");
+                return "";
+            }
+        }
+};
