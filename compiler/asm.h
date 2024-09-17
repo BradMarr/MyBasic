@@ -9,8 +9,8 @@ class ASM : public std::ofstream {
     public:
         int line_number = 1;
 
-        ASM(const std::string& fileName, std::ios_base::openmode mode = std::ios::out)
-            : std::ofstream(fileName, mode) {
+        ASM(const std::string& file_name, std::ios_base::openmode mode = std::ios::out)
+            : std::ofstream(file_name, mode) {
                 *this << 
                     "section .text \n"
                     "global _start \n"
@@ -67,19 +67,19 @@ class ASM : public std::ofstream {
                 "mov rdi, " + return_value + " \n"
                 "syscall \n";
 
-            if (size(data_section) != 0) {
+            if (!data_section.empty()) {
                 *this << "section .data \n";
                 for (std::string data_item : data_section) {
                 *this << data_item << std::endl;
                 }
             }
-            if (size(bss_section) != 0) {
+            if (!bss_section.empty()) {
                 *this << "section .bss \n";
                 for (std::string bss_item : bss_section) {
                     *this << bss_item << std::endl;
                 }
             }
-            if (size(rodata_section) != 0) {
+            if (!rodata_section.empty()) {
                 *this << "section .rodata \n";
                 for (std::string rodata_item : rodata_section) {
                     *this << rodata_item << std::endl;
