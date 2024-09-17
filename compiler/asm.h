@@ -17,7 +17,7 @@ class ASM : public std::ofstream {
                     "_start: \n";
             }
 
-        void import(std::string item, std::string lib, std::vector<std::string>& rodata_section) {
+        void import(std::string item, std::string lib) {
             try {
                 LIBS[lib][item](rodata_section);
             } catch (const std::bad_function_call& e) {
@@ -61,7 +61,7 @@ class ASM : public std::ofstream {
                 "dec " + bits_to_operand_size(var_sizes[var]) + " [" + var + "] \n";
         }
 
-        void exit(std::string return_value, std::vector<std::string> data_section, std::vector<std::string> bss_section, std::vector<std::string> rodata_section) {
+        void exit(std::string return_value) {
             *this <<
                 "mov rax, 60 \n"
                 "mov rdi, " + return_value + " \n"
@@ -94,7 +94,7 @@ class ASM : public std::ofstream {
             *this << std::endl;
         }
 
-        void var(std::string var_name, std::string var_size, Token& var_value, std::vector<std::string>& data_section, std::string pre ="") {
+        void var(std::string var_name, std::string var_size, Token& var_value, std::string pre ="") {
             std::string directive;
             var_sizes.insert({var_name, var_size});
             if (var_size == "8") {
@@ -140,7 +140,7 @@ class ASM : public std::ofstream {
                 "syscall \n";
         }
 
-        void print(std::vector<Token> print_items, std::vector<std::string>& rodata_section) {
+        void print(std::vector<Token> print_items) {
             int data_size = 0;
             string_literal_count += 1;
             std::string constructed_data = "lit_" + std::to_string(string_literal_count) + " db ";
@@ -181,6 +181,10 @@ class ASM : public std::ofstream {
         }
     private:
         int string_literal_count = 0;
+
+        std::vector<std::string> data_section = {};
+        std::vector<std::string> bss_section = {};
+        std::vector<std::string> rodata_section = {};
 
         std::string bits_to_operand_size(std::string bits) {
             if (bits == "8") {

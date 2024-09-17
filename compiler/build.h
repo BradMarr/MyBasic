@@ -15,31 +15,28 @@ void build(std::string input_path, std::string output_path) {
     }
 
     std::string line;
-    std::vector<std::string> data_section = {};
-    std::vector<std::string> bss_section = {};
-    std::vector<std::string> rodata_section = {};
     while(getline(input_file, line)) {
-        if (size(line) == 0) {
+        if (line.empty()) {
             continue;
         }
 
         std::vector tokens = split(line, ' ');
 
         if (tokens[0] == "exit") {
-            ASM.exit(tokens[1], data_section, bss_section, rodata_section);
+            ASM.exit(tokens[1]);
         } else if (tokens[0] == "_") {
             tokens.erase(tokens.begin());
             ASM._(tokens);
 
         } else if (tokens[0] == "import") {
-            ASM.import(tokens[1], tokens[2], rodata_section);
+            ASM.import(tokens[1], tokens[2]);
 
         } else if (tokens[0] == "var") {
-            ASM.var(tokens[1], tokens[2], tokens[3], data_section);
+            ASM.var(tokens[1], tokens[2], tokens[3]);
 
         } else if (tokens[0] == "print") {
             tokens.erase(tokens.begin());
-            ASM.print(tokens, rodata_section);
+            ASM.print(tokens);
 
         } else if (tokens[0] == "#") {
             ;
