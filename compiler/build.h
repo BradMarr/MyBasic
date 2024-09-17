@@ -20,7 +20,7 @@ void build(std::string input_path, std::string output_path) {
             continue;
         }
 
-        std::vector tokens = split(line, ' ');
+        std::vector<Token> tokens = split(line, ' ');
 
         if (tokens[0] == "exit") {
             ASM.exit(tokens[1]);
