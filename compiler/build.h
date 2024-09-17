@@ -37,12 +37,10 @@ void build(std::string input_path, std::string output_path) {
         } else if (tokens[0] == "print") {
             tokens.erase(tokens.begin());
             ASM.print(tokens);
-
         } else if (tokens[0] == "#") {
             ;
         } else if (tokens[0] == "add") {
             ASM.add(tokens[1], tokens[2]);
-                
         } else if (tokens[0] == "sub") {
             ASM.sub(tokens[1], tokens[2]);
         } else if (tokens[0] == "inc") {
