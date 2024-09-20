@@ -122,24 +122,6 @@ class ASM : public std::ofstream {
             data_section.push_back("len_" + var_name + " equ $-" + var_name);
         }
 
-        void print_var(std::string var_name) {
-            *this << 
-                "mov rax, 1 \n"
-                "mov rdi, 1 \n"
-                "mov rsi, " + var_name + " \n"
-                "mov rdx, len_" + var_name + " \n"
-                "syscall \n";
-        }
-
-        void print_lit(int lit_index, int lit_length) {
-            *this << 
-                "mov rax, 1 \n"
-                "mov rdi, 1 \n"
-                "mov rsi, lit_" + std::to_string(lit_index) + " \n"
-                "mov rdx, " + std::to_string(lit_length) + " \n"
-                "syscall \n";
-        }
-
         void print(std::vector<Token> print_items) {
             int data_size = 0;
             string_literal_count += 1;
@@ -203,5 +185,23 @@ class ASM : public std::ofstream {
                 panic("Invalid operand size (line " + std::to_string(line_number) + "): `" + bits + "` is an invalid size.");
                 return "";
             }
+        }
+
+        void print_var(std::string var_name) {
+            *this << 
+                "mov rax, 1 \n"
+                "mov rdi, 1 \n"
+                "mov rsi, " + var_name + " \n"
+                "mov rdx, len_" + var_name + " \n"
+                "syscall \n";
+        }
+
+        void print_lit(int lit_index, int lit_length) {
+            *this << 
+                "mov rax, 1 \n"
+                "mov rdi, 1 \n"
+                "mov rsi, lit_" + std::to_string(lit_index) + " \n"
+                "mov rdx, " + std::to_string(lit_length) + " \n"
+                "syscall \n";
         }
 };
