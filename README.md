@@ -14,7 +14,7 @@ The language is very simple, look in ex/ex.mybasic for reference. The only requi
 | _        | assembly   | ...       | ...      | Inlines assembly, takes every token after        |
 | import   | item        | library    |          | Imports an item from a library                   |
 | var      | name       | size (bytes): int     | value    | Defines a var with a set value                   |
-| add      | variable: int    | value: int     |          | Adds value to variable                            |
-| sub      | variable: int     | value: int     |          | Subtracts value from variable                     |
-| inc      | variable: int    |           |          | Increments variable by 1                          |
-| dec      | variable: int    |           |          | Decrements value by 1                            |
+| add      | variable    | value: int     |          | Adds value to variable                            |
+| sub      | variable     | value: int     |          | Subtracts value from variable                     |
+| inc      | variable    |           |          | Increments variable by 1                          |
+| dec      | variable    |           |          | Decrements value by 1                            |
